@@ -121,6 +121,8 @@ impl<T> List<T> {
 impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
+        // can't have 2 references to the same mutable value.
+        // => `next.take()` to get exclusive mutable access.
         self.next.take().map(|node| {
             self.next = node.next.as_deref_mut();
             &mut node.elem

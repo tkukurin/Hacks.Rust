@@ -1,3 +1,42 @@
+/*
+ * https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html
+ *
+ * OWNERSHIP
+ * Each value in Rust has *exactly one owner variable*.
+ * [RAII] When owner goes out of scope value is dropped: `value.drop()`
+ *
+ * This doesn't compile -- default semantics is move (s2 gets ownership):
+ *   let s1 = String::from("hello");
+ *   let s2 = s1;
+ *   println!("{}, world!", s1);
+ *
+ * Must be a stack value, implement `Copy` trait. E.g. this compiles:
+ *   let i1 = 42;
+ *   let i2 = i1;
+ *   println!("{} / {}", i1, i2);
+ *
+ *
+ * MOVING / BORROWING / REFERENCING / DEREFERENCING
+ * Seems similar to cpp. `&value` is reference, `*value` dereference.
+ * Immutable by default (I think ~ `&v <=> const &`, `&mut v <=> &v`).
+ *
+ * Only one variable can hold a mutable reference (prevent race cond's):
+ *   let s1mut1 = &mut s1;
+ *   let s1mut2 = &mut s1;
+ *   println!("{}, {}!", s1mut1, s1mut2);  // doesn't compile
+ *
+ * But for similar reasons, this won't work:
+ *   let s1a = &s1;
+ *   let s1b = &mut s1;
+ *   println!("{}, {}!", s1a, s1b);  // s1a doesn't expect s1 to change.
+ *
+ * The below is fine due to **non-lexical lifetimes**:
+ *   let s1a = &s1;
+ *   println!("{}", s1a);  // fine
+ *   let s1b = &mut s1;
+ *   println!("{}", s1b);  // fine, s1a unused
+ */
+
 use std::mem;
 
 pub struct List {
