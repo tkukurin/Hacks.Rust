@@ -83,6 +83,10 @@ impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.next.map(|node| {
+            // pre-rust 1.4 this was `.as_ref().map(|n| &**n)`
+            // or "turbofish" `.as_ref().map::<&Node<T>, _>(|n| &n)`
+            // because `map<U, F>(self, f: F) -> Option<U>`
+            // and it lets the compiler know to apply coercion to `&**n`
             self.next = node.next.as_deref();
             &node.elem
         })
@@ -92,6 +96,17 @@ impl<'a, T> Iterator for Iter<'a, T> {
 #[cfg(test)]
 mod test {
     use super::List;
+
+    #[test]
+    fn iter() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+        let mut iter = list.iter();
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), None);
+    }
 
     #[test]
     fn into_iter() {
