@@ -48,9 +48,42 @@ impl<T> Drop for List<T> {
     }
 }
 
+// pub trait Iterator {
+//     type Item;
+//     fn next(&mut self) -> Option<Self::Item>;
+// }
+
+// Tuple: intoiter.0 == List<T>
+pub struct IntoIter<T>(List<T>);
+
+impl<T> List<T> {
+    pub fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
+}
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop()
+    }
+}
+
+
 #[cfg(test)]
 mod test {
     use super::List;
+
+    #[test]
+    fn into_iter() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), None);
+    }
 
     #[test]
     fn basics() {
