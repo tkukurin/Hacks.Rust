@@ -69,11 +69,25 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
+/*
+ * lifetimes could in principle be left out, but checking all the borrows would
+ * be a huge whole-program analysis that would produce cryptic non-local errors.
+ * Rust's system means all borrow checking can be done in each function body
+ * independently => errors should be fairly local. Rust auto-infers:
+ * 1 Only one reference in input, so the output must be derived from that input
+ *   fn foo(&A) -> &B; // sugar for: fn foo<'a>(&'a A) -> &'a B;
+ * 2 Many inputs, assume they're all independent
+ *   fn foo(&A, &B, &C); // sugar for: fn foo<'a, 'b, 'c>(&'a A, &'b B, &'c C);
+ * 3 Methods, assume all output lifetimes are derived from `self`
+ *   fn foo(&self, &B, &C) -> &D; // sugar for:
+ *   fn foo<'a, 'b, 'c>(&'a self, &'b B, &'c C) -> &'a D;
+ */
 pub struct Iter<'a, T> {
     next: Option<&'a Node<T>>,
 }
 
 impl<T> List<T> {
+    // lifetime could be elided here according to rule 3 above
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
         Iter { next: self.head.as_deref() }
     }
