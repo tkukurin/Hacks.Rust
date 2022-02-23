@@ -1,6 +1,4 @@
 
-use std::mem;
-
 pub struct List<T> {
     head: Link<T>
 }
@@ -35,6 +33,10 @@ impl<T> List<T> {
         // impl<T> Option<T> { pub fn as_ref(&self) -> Option<&T>; }
         self.head.as_ref().map(|node| { &node.elem })
     }
+
+    fn peek_mut(&mut self) -> Option<&mut T> {
+        self.head.as_mut().map(|node| { &mut node.elem })
+    }
 }
 
 impl<T> Drop for List<T> {
@@ -60,5 +62,10 @@ mod test {
         assert_eq!(list.peek(), Some(&strval));
         assert_eq!(list.pop(), Some(strval));
         assert_eq!(list.pop(), None);
+
+        list.push(strval);
+        list.peek_mut().map(|v| { *v = "Not anymore" });
+
+        assert_eq!(list.peek(), Some(&"Not anymore"));
     }
 }
