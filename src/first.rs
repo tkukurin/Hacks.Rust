@@ -1,5 +1,11 @@
 use std::mem;
 
+mod test {
+    #[test]
+    fn basics() {
+    }
+}
+
 impl List {
     fn new() -> Self {
         return List { head: Link::Empty };
