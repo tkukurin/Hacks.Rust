@@ -66,6 +66,16 @@ impl<'a, T> Iterator for Iter<'a, T> {
 #[cfg(test)]
 mod test {
     use super::List;
+
+    #[test]
+    fn iter() {
+        let list = List::new().prepend(1).prepend(2);
+        let mut iter = list.iter();
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), None);
+    }
+
     #[test]
     fn basics() {
         let l1 = List::new();
