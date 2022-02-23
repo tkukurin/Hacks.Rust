@@ -67,5 +67,6 @@ mod test {
         list.peek_mut().map(|v| { *v = "Not anymore" });
 
         assert_eq!(list.peek(), Some(&"Not anymore"));
+        assert_eq!(list.peek_mut(), Some(&mut "Not anymore"));
     }
 }
