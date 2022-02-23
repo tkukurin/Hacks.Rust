@@ -1,5 +1,13 @@
 // like Box, but shared
 use std::rc::Rc;
+// there is also std::sync::Arc, which atomically updates ref. counts.
+// Rust models thread-safety in a first-class way with two traits:
+// - A type is Send if it's safe to move to another thread.
+// - A type is Sync if it's safe to share between multiple threads
+//
+// Send and Sync are also automatically derived traits based on whether you are
+// totally composed of Send and Sync types. It's similar to how you can only
+// implement Copy if you're only made of Copy types
 
 pub struct List<T> {
     head: Link<T>
