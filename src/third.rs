@@ -62,6 +62,20 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        let mut head = self.head.take();
+        while let Some(node) = head {
+            // make sure that this is the last node reference (Rc is shared ptr)
+            if let Ok(mut node) = Rc::try_unwrap(node) {
+                head = node.next.take();
+            } else {  // else bail (someone else also holds this reference)
+                break;
+            }
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod test {
