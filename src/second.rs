@@ -75,7 +75,7 @@ pub struct Iter<'a, T> {
 
 impl<T> List<T> {
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        Iter { next: self.head.map(|n| &*n) }
+        Iter { next: self.head.as_deref() }
     }
 }
 
@@ -83,7 +83,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.next.map(|node| {
-            self.next = node.next.map(|n| &*n);
+            self.next = node.next.as_deref();
             &node.elem
         })
     }
