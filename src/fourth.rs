@@ -60,6 +60,12 @@ impl<T> List<T> {
     }
 }
 
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        while self.pop_front().is_some() {}
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::List;
@@ -72,7 +78,10 @@ mod test {
         list.push_front(3);
         assert_eq!(list.pop_front(), Some(3));
         assert_eq!(list.pop_front(), Some(2));
+        list.push_front(4);
+        assert_eq!(list.pop_front(), Some(4));
         assert_eq!(list.pop_front(), Some(1));
+        assert_eq!(list.pop_front(), None);
     }
 }
 
