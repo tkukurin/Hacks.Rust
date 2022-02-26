@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 
 pub struct List<T> {
     head: Link<T>,
@@ -58,6 +58,22 @@ impl<T> List<T> {
             Rc::try_unwrap(old_head).ok().unwrap().into_inner().elem
         })
     }
+
+    // Won't work, need to expose internals.
+    // The gist of it is that Ref<T> goes out of scope, making T lose owner.
+    // pub fn peek(&self) -> Option<T> {
+    //     self.head.as_ref().map(|h| {
+    //         &h.elem
+    //     })
+    // }
+
+    // Returning a Ref<T> keeps it in scope.
+    pub fn peek_front(&self) -> Option<Ref<T>> {
+        self.head.as_ref().map(|node| {
+            Ref::map(node.borrow(), |node| &node.elem)
+        })
+    }
+
 }
 
 impl<T> Drop for List<T> {
@@ -66,9 +82,47 @@ impl<T> Drop for List<T> {
     }
 }
 
+pub struct IntoIter<T>(List<T>);
+
+impl<T> List<T> {
+    pub fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
+}
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<T> {
+        self.0.pop_front()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::List;
+    #[test]
+    fn test_iter() {
+        let mut list = List::new();
+        list.push_front(1);
+        list.push_front(2);
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), None);
+        // Can't do this due to borrow in into_iter.
+        // assert_eq!(list.pop_front(), None);
+    }
+
+    #[test]
+    fn test_peek() {
+        let mut list = List::new();
+        assert!(list.peek_front().is_none());
+        list.push_front(1);
+        assert_eq!(&*list.peek_front().unwrap(), &1);
+        // didn't change underlying structure
+        assert_eq!(list.pop_front(), Some(1));
+        assert_eq!(list.pop_front(), None);
+    }
 
     #[test]
     fn test_pushpop() {
