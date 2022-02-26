@@ -59,6 +59,21 @@ impl<T> List<T> {
         })
     }
 
+    pub fn pop_back(&mut self) -> Option<T> {
+        self.tail.take().map(|old_tail| {
+            match old_tail.borrow_mut().prev.take() {
+                None => {
+                    self.head.take();
+                }
+                Some(new_tail) => {
+                    new_tail.borrow_mut().next.take();
+                    self.tail = Some(new_tail);
+                }
+            }
+            Rc::try_unwrap(old_tail).ok().unwrap().into_inner().elem
+        })
+    }
+
     // Won't work, need to expose internals.
     // The gist of it is that Ref<T> goes out of scope, making T lose owner.
     // pub fn peek(&self) -> Option<T> {
@@ -97,9 +112,32 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
+impl<T> DoubleEndedIterator for IntoIter<T> {
+    fn next_back(&mut self) -> Option<T> {
+        self.0.pop_back()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::List;
+
+    #[test]
+    fn test_iter_frontback() {
+        let mut list = List::new();
+        list.push_front(1);
+        list.push_front(2);
+        list.push_front(3);
+        let mut iter = list.into_iter();
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next_back(), Some(1));
+        assert_eq!(iter.next_back(), Some(2));
+        assert_eq!(iter.next_back(), None);
+        assert_eq!(iter.next(), None);
+        // Can't do this due to borrow in into_iter.
+        // assert_eq!(list.pop_front(), None);
+    }
+
     #[test]
     fn test_iter() {
         let mut list = List::new();
